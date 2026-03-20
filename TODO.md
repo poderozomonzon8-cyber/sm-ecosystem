@@ -1,11 +1,17 @@
-# Supabase Migration & App Fix
+# Supabase Migration & Auth Fix Steps
 
-## Current Status
-- [x] .env.local (keys set)
-- [x] anima-supabase-adapter.ts (mocks + hooks)
-- [ ] Update imports in all files (useQuery → anima-supabase-adapter)
-- [ ] Run supabase-schema-correct.sql
-- [ ] Test UserManagerPanel → data
-- [x] Full dev server (running)
+**Status:**
+- [x] .env.local keys
+- [x] anima-supabase-adapter hooks
+- [x] NotificationContext import
+- [x] QueryClientProvider
+- [x] Mobile ServiceSelector bottom panel
+- [ ] **Supabase Auth Fix** (current)
+  - [ ] AuthContext pure Supabase (no localStorage/guest)
+  - [ ] Role from profiles table
+  - [ ] Logout redirect /login
+- [ ] supabase-schema-correct.sql
+- [ ] Test UserManagerPanel data
+- [x] Dev server + Vercel config (chunk warning fixed)
 
-**Next**: Fix NotificationContext import → test app loads without crash → login test.
+**Next:** AuthContext edits → test login/logout → schema → full test.

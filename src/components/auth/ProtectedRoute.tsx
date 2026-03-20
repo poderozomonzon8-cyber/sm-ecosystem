@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppAuth } from "@/contexts/AuthContext";
 import type { Permission, Role } from "@/contexts/AuthContext";
 
@@ -38,16 +39,17 @@ export default function ProtectedRoute({
   children,
   unauthorized,
 }: ProtectedRouteProps) {
-  const { user, isPending, isAnonymous, role, can, login } = useAppAuth();
+  const { user, isPending, isAnonymous, role, can } = useAppAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isPending && isAnonymous && requireAuth) {
-      login();
+      navigate("/login");
     }
-  }, [isPending, isAnonymous, requireAuth, login]);
+  }, [isPending, isAnonymous, requireAuth, navigate]);
 
   if (isPending) return <Spinner />;
-  if (isAnonymous && requireAuth) return <Spinner />;
+  if (isAnonymous && requireAuth) return null;
 
   if (allowedRoles && !allowedRoles.includes(role)) {
     return <>{unauthorized ?? <AccessDenied />}</>;

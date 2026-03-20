@@ -33,17 +33,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 
 export const ADMIN_EMAILS = ["silviolmonzon@amenagementmonzon.com"];
 
-export function detectRole(email: string | undefined | null): Role {
-  if (!email) return "guest";
-  if (ADMIN_EMAILS.includes(email.toLowerCase())) return "admin";
-  const stored = localStorage.getItem(`monzon_role_${email}`);
-  if (stored && ROLE_PERMISSIONS[stored as Role]) return stored as Role;
-  return "client";
-}
 
-export function setStoredRole(email: string, role: Role) {
-  localStorage.setItem(`monzon_role_${email}`, role);
-}
 
 /* ─────────────────────────────────────────────
    Context type (updated for Supabase)
@@ -112,30 +102,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const logout = useCallback(async () => {
+const logout = useCallback(async () => {
+  try {
+    console.log('[Auth] Starting logout...');
+    
+    // Supabase logout
+    const { error } = await supabaseSignOut();
+    if (error) throw error;
+    console.log('[Auth] Supabase logout complete');
+
+    // Clear state
+    setUser(null);
+    setRole("client");
+    setProfile(null);
+    
+  } catch (error) {
+    console.error('[Auth] Logout error:', error);
+  }
+}, []);
+
+const [role, setRole] = useState<Role>("client");
+  const [profile, setProfile] = useState<any>(null);
+  
+  const updateProfile = async (userId: string) => {
     try {
-      console.log('[Auth] Starting logout...');
-      
-      // Clear role storage
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('monzon_role_')) localStorage.removeItem(key);
-      });
-      console.log('[Auth] Cleared role storage');
-
-      // Supabase logout
-      const { error } = await supabaseSignOut();
-      if (error) throw error;
-      console.log('[Auth] Supabase logout complete');
-
-      // Clear state
-      setUser(null);
-      
-    } catch (error) {
-      console.error('[Auth] Logout error:', error);
+      const p = await getUserProfile(userId);
+      setProfile(p);
+      setRole(p?.role || "client");
+    } catch {
+      setRole("client");
     }
-  }, []);
+  };
 
-  const role = useMemo(() => detectRole(user?.email), [user?.email]);
+  useEffect(() => {
+    if (user?.id) {
+      updateProfile(user.id);
+    } else {
+      setProfile(null);
+      setRole("client");
+    }
+  }, [user?.id]);
+
   const permissions = useMemo(() => ROLE_PERMISSIONS[role] ?? [], [role]);
   const can = useCallback((p: Permission) => permissions.includes(p), [permissions]);
   const isAdmin = role === "admin";
