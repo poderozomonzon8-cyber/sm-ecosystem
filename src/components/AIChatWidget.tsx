@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Robot, X, PaperPlaneTilt, CaretDown, Spinner } from "@phosphor-icons/react";
-import { useMutation } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 type Message = {
   id: string;
@@ -33,7 +33,11 @@ const BOT_KB: { pattern: RegExp; response: string }[] = [
 ];
 
 function getBotResponse(text: string, leadInfo: LeadInfo, pendingField: string | null): { reply: string; newPendingField: string | null; leadUpdate: Partial<LeadInfo> } {
-  const lower = text.trim().toLowerCase();
+const lower = text.trim().toLowerCase();
+
+if (lower.includes("price") || lower.includes("cost")) {
+  // lógica del bot
+}
   let leadUpdate: Partial<LeadInfo> = {};
   let newPendingField: string | null = null;
 
@@ -84,17 +88,36 @@ function renderMarkdown(text: string) {
 export default function AIChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { id: "init", role: "bot", text: "Hello! 👋 I'm **Monzon AI**. I can answer questions about our services, process, and materials. How can I help you today?", ts: Date.now() },
+    {
+      id: "init",
+      role: "bot",
+      text: "Hello! 👋 I'm **Monzon AI**. I can answer questions about our services, process, and materials. How can I help you today?",
+      ts: Date.now(),
+    },
   ]);
-  const [input, setInput]           = useState("");
-  const [typing, setTyping]         = useState(false);
-  const [leadInfo, setLeadInfo]     = useState<LeadInfo>({});
+  const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [leadInfo, setLeadInfo] = useState<LeadInfo>({});
   const [pendingField, setPendingField] = useState<string | null>(null);
-  const [leadSent, setLeadSent]     = useState(false);
-  const messagesEndRef              = useRef<HTMLDivElement>(null);
-  const inputRef                    = useRef<HTMLInputElement>(null);
+  const [leadSent, setLeadSent] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const { create: createLead } = useMutation("Lead");
+  // ⭐ Reemplazo moderno de useMutation("Lead")
+  const createLead = async (payload: any) => {
+    const { data, error } = await supabase
+      .from("Lead")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Lead creation error:", error);
+      throw error;
+    }
+
+    return data;
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -108,6 +131,7 @@ export default function AIChatWidget() {
   useEffect(() => {
     if (leadInfo.name && leadInfo.email && !leadSent) {
       setLeadSent(true);
+
       createLead({
         name: leadInfo.name,
         email: leadInfo.email ?? "",
@@ -117,13 +141,14 @@ export default function AIChatWidget() {
         status: "new",
         assignedTo: "",
         assignedEmployeeId: "",
-        notes: `Chat session lead. Name: ${leadInfo.name}, Phone: ${leadInfo.phone ?? "not provided"}`,
+        notes: `Chat session lead. Name: ${leadInfo.name}, Phone: ${
+          leadInfo.phone ?? "not provided"
+        }`,
         budget: "",
         serviceInterest: "",
       }).catch(() => {});
     }
-  }, [leadInfo, leadSent, createLead]);
-
+  }, [leadInfo, leadSent]);
   const send = () => {
     const text = input.trim();
     if (!text) return;
