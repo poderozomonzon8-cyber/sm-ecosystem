@@ -1,19 +1,16 @@
-# Supabase Migration & Auth Fix Steps
+# Project Reset: Rebuild from Animations + Supabase Ready
 
-**Status:**
-- [x] .env.local keys
-- [x] anima-supabase-adapter hooks (REMOVED - Anima traces cleaned)
-- [x] NotificationContext import
-- [x] QueryClientProvider
-- [x] Mobile ServiceSelector bottom panel
-- [ ] **Supabase Auth Fix** (current)
-  - [ ] AuthContext pure Supabase (no localStorage/guest)
-  - [ ] Role from profiles table
-  - [ ] Logout redirect /login
-- [ ] supabase-schema-correct.sql
-- [ ] Test UserManagerPanel data
-- [x] Dev server + Vercel config (chunk warning fixed)
-- [x] **Anima cleanup** - All references removed (manifest.json icons updated, adapter.ts deleted)
-
-**Next:** AuthContext edits → test login/logout → schema → full test.
+## Progress
+- [x] 1. User confirmation & plan
+- [x] 2. Delete sm-ecosystem/ (PS command)
+- [x] 3. Clean src/ (full reset)
+- [x] 4. Minimal shell complete
+- [x] 5. package.json + supabase
+- [ ] 6. Git commit
+- [ ] 7. npm install & dev
+- [ ] 6. Fix configs
+- [ ] 7. Minimal index.tsx/css
+- [ ] 8. Git commit
+- [ ] 9. Install & dev server
+- [ ] 10. Test complete
 
